@@ -18,7 +18,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("OPENAI_API_KEY")
-print(API_KEY)  # test ke liye
 
 
 DEFAULT_CHATKIT_BASE = "https://api.openai.com"
@@ -181,3 +180,11 @@ def parse_json(response: httpx.Response) -> Mapping[str, Any]:
         return parsed if isinstance(parsed, Mapping) else {}
     except (json.JSONDecodeError, httpx.DecodingError):
         return {}
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],       # ya versel URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
