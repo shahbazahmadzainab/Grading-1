@@ -1,34 +1,59 @@
 const readEnvString = (value: unknown): string | undefined =>
-  typeof value === "string" && value.trim() ? value.trim() : undefined;
+  typeof value === "string" && value.trim()
+    ? value.trim()
+    : undefined;
+
+const API_URL =
+  readEnvString(import.meta.env.VITE_API_URL) ||
+  "http://127.0.0.1:8000";
 
 export const workflowId = (() => {
   const id = readEnvString(import.meta.env.VITE_CHATKIT_WORKFLOW_ID);
+
   if (!id || id.startsWith("wf_replace")) {
-    throw new Error("Set VITE_CHATKIT_WORKFLOW_ID in your .env file.");
+    throw new Error(
+      "Set VITE_CHATKIT_WORKFLOW_ID in your .env file."
+    );
   }
+
   return id;
 })();
 
 export function createClientSecretFetcher(
-  workflow: string,
-  endpoint = "/api/create-session"
+  workflow: string
 ) {
   return async (currentSecret: string | null) => {
-    if (currentSecret) return currentSecret;
+    if (currentSecret) {
+      return currentSecret;
+    }
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ workflow: { id: workflow } }),
-    });
+    const response = await fetch(
+      `${API_URL}/api/create-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          workflow: {
+            id: workflow,
+          },
+        }),
+      }
+    );
 
     const payload = (await response.json().catch(() => ({}))) as {
       client_secret?: string;
-      error?: string;
+      error?: string | { message?: string };
     };
 
     if (!response.ok) {
-      throw new Error(payload.error ?? "Failed to create session");
+      const errorMessage =
+        typeof payload.error === "string"
+          ? payload.error
+          : payload.error?.message || "Failed to create session";
+
+      throw new Error(errorMessage);
     }
 
     if (!payload.client_secret) {
