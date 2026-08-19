@@ -8,7 +8,7 @@ const API_URL =
   "http://127.0.0.1:8000";
 
 export const workflowId = (() => {
-  const id = readEnvString(import.meta.env.VITE_CHATKIT_WORKFLOW_ID);
+  const id = "wf_694a787b68248190b9a6b33edac634c707c99049351a2213";
 
   if (!id || id.startsWith("wf_replace")) {
     throw new Error(
